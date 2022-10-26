@@ -1,0 +1,17 @@
+IDS
+Num id1
+VarX id2
+prueba id3
+VarY id4
+IMRPIME id5
+Z id6
+VarZ id7
+
+TXTS
+"Variable X es"  txt1
+"Variable"  txt2
+
+NUM
+100  100
+0x1D  209
+0xA1  26

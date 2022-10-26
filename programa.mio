@@ -1,0 +1,14 @@
+#Programa fuente en el lenguaje MIO
+PROGRAMA prueba 
+
+#declaracion de variables
+VarX = 100
+VarY = 0xA1
+LEE Num
+VarZ = VarY + 0x1D
+VarX = VarX * Num + 00x
+IMPRIME "Variable X es"
+IMPRIME VarX
+IMRPIME "Variable" Z es" 
+IMPRIME VarZ
+FINPROG
