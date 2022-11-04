@@ -27,7 +27,7 @@ public class lexer {
             }
             s.close();
         } catch (Exception ex) {
-            System.out.println("Mensaje " + ex.getMessage());
+            ex.printStackTrace();
         }
 
         generarArchivoLex();
@@ -54,33 +54,47 @@ public class lexer {
             }
 
             if (cadena.charAt(endIndex) == ' ' || endIndex + 1 == length || isOperador(cadena.charAt(endIndex))) {
-                auxCadena = cadena.substring(beginIndex, endIndex).trim();
                 // Para obtener el último caracter de la linea
-                if (endIndex + 1 == length)
+                if (endIndex + 1 == length){
                     auxCadena = cadena.substring(beginIndex, endIndex + 1).trim();
+                }
+                else {
+                    auxCadena = cadena.substring(beginIndex, endIndex).trim();
+                }
 
-                if (isPalabraReservada(auxCadena)) {
-                    tokens.add(auxCadena);
-                } else if (isIdentificador(auxCadena)) {
-                    tokens.add("[id]");
-                    ids.add(auxCadena);
-                } else if (isLiteralTexto(auxCadena)) {
-                    tokens.add("[litalfnum]");
-                    txt.add(auxCadena);
-                } else if (isLiteralNumerica(auxCadena)) {
-                    tokens.add("[valorn]");
-                    vls.add(auxCadena);
-                } else {
-                    if (auxCadena.length() != 0) {
-                        if (isOperador(auxCadena.charAt(0)))
-                            tokens.add(auxCadena);
-                        else 
-                            tokens.add("ERROR en LINEA " + linea + " simbolo invalido: " + auxCadena);
+                if (auxCadena.length() != 0){
+                    if (isOperador(auxCadena.charAt(0))){
+                        analizarCadena(auxCadena.substring(0, 1).trim(), linea);
+                        analizarCadena(auxCadena.substring(1, auxCadena.length()).trim(), linea);
+                    } else {
+                        analizarCadena(auxCadena, linea);
                     }
                 }
                 beginIndex = endIndex;
             }
             endIndex++;
+        }
+    }
+
+    public static void analizarCadena(String cadena, int linea){
+        if (isPalabraReservada(cadena)) {
+            tokens.add(cadena);
+        } else if (isIdentificador(cadena)) {
+            tokens.add("[id]");
+            ids.add(cadena);
+        } else if (isLiteralTexto(cadena)) {
+            tokens.add("[litalfnum]");
+            txt.add(cadena);
+        } else if (isLiteralNumerica(cadena)) {
+            tokens.add("[valorn]");
+            vls.add(cadena);
+        } else {
+            if (cadena.length() != 0) {
+                if (isOperador(cadena.charAt(0)))
+                    tokens.add(cadena);
+                else 
+                    tokens.add("ERROR en LINEA " + linea + " simbolo invalido: " + cadena);
+            }
         }
     }
 

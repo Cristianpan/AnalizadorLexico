@@ -3,31 +3,14 @@ PROGRAMA
 [id]
 =
 [valorn]
-[id]
-=
++
 [valorn]
-LEE
-[id]
-[id]
-=
-[id]
 +
 [valorn]
 [id]
 =
-[id]
-*
-[id]
+[valorn]
 +
-ERROR en LINEA 9 simbolo invalido: 00x
-IMPRIME
-[litalfnum]
-IMPRIME
-[id]
-[id]
-[litalfnum]
-[id]
-ERROR en LINEA 12 simbolo invalido: es"
-IMPRIME
-[id]
-FINPROG
+ERROR en LINEA 6 simbolo invalido: H"ol
++
+[valorn]
