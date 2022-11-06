@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.ObjectInputFilter.Status;
 import java.sql.SQLInvalidAuthorizationSpecException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -25,8 +26,9 @@ public class Lexer {
         this.terminal = terminal;
     }
 
-    public void Lexer(String ruta) throws Exception {
+    public boolean Lexer(String ruta) throws Exception {
         File fichero = new File(ruta);
+        borrarFicheros(obtenerRuta(ruta)); 
         Scanner s = null;
         int linea = 0;
 
@@ -34,20 +36,25 @@ public class Lexer {
             s = new Scanner(fichero);
             while (s.hasNextLine()) {
                 linea++;
-                obtenerDatos(s.nextLine(), linea);
+                if(obtenerDatos(s.nextLine(), linea) == false){
+                    return false; 
+                }
             }
             s.close();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        System.out.println("It's Okay");
-        this.terminal.setText("It's okay");
-
+        
+        this.terminal.append("It's okay");
         generarArchivoLex(obtenerRuta(ruta));
         generarArchivoSim(obtenerRuta(ruta));
+
+        return true; 
+
+
     }
 
-    public void obtenerDatos(String cadena, int linea) {
+    public boolean obtenerDatos(String cadena, int linea) {
         int endIndex = 0, beginIndex = 0, length = 0, aux;
         String auxCadena = "";
         cadena = cadena.trim();
@@ -76,19 +83,23 @@ public class Lexer {
 
                 if (auxCadena.length() != 0) {
                     if (isOperador(auxCadena.charAt(0))) {
-                        analizarCadena(auxCadena.substring(0, 1).trim(), linea);
-                        analizarCadena(auxCadena.substring(1, auxCadena.length()).trim(), linea);
+                        if (analizarCadena(auxCadena.substring(0, 1).trim(), linea) == false || analizarCadena(auxCadena.substring(1, auxCadena.length()).trim(), linea) == false)
+                            return false; 
                     } else {
-                        analizarCadena(auxCadena, linea);
+                        if (analizarCadena(auxCadena, linea) == false)
+                            return false; 
                     }
                 }
                 beginIndex = endIndex;
             }
             endIndex++;
         }
+
+        return true; 
     }
 
-    public void analizarCadena(String cadena, int linea) {
+    public boolean analizarCadena(String cadena, int linea) {
+
         if (isPalabraReservada(cadena)) {
             tokens.add(cadena);
         } else if (isIdentificador(cadena)) {
@@ -105,12 +116,13 @@ public class Lexer {
                 if (isOperador(cadena.charAt(0)))
                     tokens.add(cadena);
                 else {
-                    this.terminal.setText("Error en la linea " + linea + "\n");
-                    this.terminal.setText("Simbolo invalido" + cadena);
-                    System.exit(1);
+                    this.terminal.append("Error en la linea " + linea + ", simbolo invalido: " + cadena + "\n\n"); 
+                    return false; 
                 }
             }
         }
+
+        return true; 
     }
 
     public void generarArchivoLex(String ruta) throws IOException {
@@ -247,4 +259,19 @@ public class Lexer {
 
         return ruta.substring(0, i);
     }
+
+    public void borrarFicheros(String ruta) throws IOException{
+        File archivoSim = new File(ruta + "factorial.sim");
+        File archivoLex = new File(ruta + "prueba.lex"); 
+
+        if (archivoSim != null){
+            archivoSim.delete(); 
+        }
+
+        if (archivoLex != null){
+            archivoLex.delete(); 
+        }
+
+    }
+
 }
