@@ -1,7 +1,13 @@
-#Programa fuente en el lenguaje MIO
+# Programa fuente en el lenguaje MIO
 PROGRAMA prueba 
-
-varx=5+5+35
-
-vary = 5 + H"ol +3
-
+# declaraciones de variables 
+VarX = 100
+VarY = 0xA1
+LEE Num 
+VarZ= VarY + 0x1D
+Varx = VarX * Num
+IMPRIME "Variable X es"
+IMPRIME VarX
+IMPRIME "Variable Z es" 
+IMPRIME VarZ
+FINPROG

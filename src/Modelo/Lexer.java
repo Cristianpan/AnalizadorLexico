@@ -1,7 +1,10 @@
+package Modelo;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLInvalidAuthorizationSpecException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Scanner;
@@ -9,16 +12,24 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class lexer {
-    static ArrayList<String> tokens = new ArrayList<>();
-    static Set<String> ids = new HashSet<>();
-    static Set<String> txt = new HashSet<>();
-    static Set<String> vls = new HashSet<>();
+import javax.swing.JTextArea;
 
-    public static void main(String[] args) throws Exception {
-        File fichero = new File("programa.mio");
+public class Lexer {
+    private ArrayList<String> tokens = new ArrayList<>();
+    private Set<String> ids = new HashSet<>();
+    private Set<String> txt = new HashSet<>();
+    private Set<String> vls = new HashSet<>();
+    private JTextArea terminal;
+
+    public void setTerminal(JTextArea terminal) {
+        this.terminal = terminal;
+    }
+
+    public void Lexer(String ruta) throws Exception {
+        File fichero = new File(ruta);
         Scanner s = null;
         int linea = 0;
+
         try {
             s = new Scanner(fichero);
             while (s.hasNextLine()) {
@@ -29,12 +40,14 @@ public class lexer {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+        System.out.println("It's Okay");
+        this.terminal.setText("It's okay");
 
-        generarArchivoLex();
-        generarArchivoSim();
+        generarArchivoLex(obtenerRuta(ruta));
+        generarArchivoSim(obtenerRuta(ruta));
     }
 
-    public static void obtenerDatos(String cadena, int linea) {
+    public void obtenerDatos(String cadena, int linea) {
         int endIndex = 0, beginIndex = 0, length = 0, aux;
         String auxCadena = "";
         cadena = cadena.trim();
@@ -47,23 +60,22 @@ public class lexer {
 
             // Intenta encontrar el par de " " para ignorar los separadores
             if (cadena.charAt(endIndex) == '\"') {
-                aux = aux(endIndex + 1, cadena); 
-                if (aux != 0){
-                    endIndex = aux; 
+                aux = aux(endIndex + 1, cadena);
+                if (aux != 0) {
+                    endIndex = aux;
                 }
             }
 
             if (cadena.charAt(endIndex) == ' ' || endIndex + 1 == length || isOperador(cadena.charAt(endIndex))) {
                 // Para obtener el último caracter de la linea
-                if (endIndex + 1 == length){
+                if (endIndex + 1 == length) {
                     auxCadena = cadena.substring(beginIndex, endIndex + 1).trim();
-                }
-                else {
+                } else {
                     auxCadena = cadena.substring(beginIndex, endIndex).trim();
                 }
 
-                if (auxCadena.length() != 0){
-                    if (isOperador(auxCadena.charAt(0))){
+                if (auxCadena.length() != 0) {
+                    if (isOperador(auxCadena.charAt(0))) {
                         analizarCadena(auxCadena.substring(0, 1).trim(), linea);
                         analizarCadena(auxCadena.substring(1, auxCadena.length()).trim(), linea);
                     } else {
@@ -76,7 +88,7 @@ public class lexer {
         }
     }
 
-    public static void analizarCadena(String cadena, int linea){
+    public void analizarCadena(String cadena, int linea) {
         if (isPalabraReservada(cadena)) {
             tokens.add(cadena);
         } else if (isIdentificador(cadena)) {
@@ -92,92 +104,95 @@ public class lexer {
             if (cadena.length() != 0) {
                 if (isOperador(cadena.charAt(0)))
                     tokens.add(cadena);
-                else 
-                    tokens.add("ERROR en LINEA " + linea + " simbolo invalido: " + cadena);
+                else {
+                    this.terminal.setText("Error en la linea " + linea + "\n");
+                    this.terminal.setText("Simbolo invalido" + cadena);
+                    System.exit(1);
+                }
             }
         }
     }
 
-    public static void generarArchivoLex() throws IOException{
-        FileWriter archivo = new FileWriter("prueba.lex"); 
-        PrintWriter out = new PrintWriter(archivo); 
+    public void generarArchivoLex(String ruta) throws IOException {
+        ruta = ruta + "prueba.lex"; 
+        FileWriter archivo = new FileWriter(ruta);
+        PrintWriter out = new PrintWriter(archivo);
         try {
             for (String string : tokens) {
                 out.println(string);
             }
         } catch (Exception e) {
             System.out.println(e);
-        } 
+        }
 
         archivo.close();
 
     }
 
-    public static void generarArchivoSim() throws IOException{
-        FileWriter archivo = new FileWriter("factorial.sim"); 
-        PrintWriter out = new PrintWriter(archivo); 
-        int i = 1; 
+    public void generarArchivoSim(String ruta) throws IOException {
+        ruta = ruta + "factorial.sim"; 
+        FileWriter archivo = new FileWriter(ruta);
+        PrintWriter out = new PrintWriter(archivo);
+        int i = 1;
         try {
             out.println("IDS");
             for (String string : ids) {
                 out.println(string + " id" + i);
-                i++; 
+                i++;
             }
-            i = 1; 
+            i = 1;
             out.println("\nTXTS");
-            for (String string: txt){
+            for (String string : txt) {
                 out.println(string + "  txt" + i);
-                i++; 
+                i++;
             }
-            i = 1; 
+            i = 1;
             out.println("\nNUM");
             for (String string : vls) {
                 out.println(string + "  " + obtenerValorDecimal(string));
-                i++; 
+                i++;
             }
         } catch (Exception e) {
             System.out.println(e);
-        } 
+        }
 
         archivo.close();
 
     }
 
-    public static int obtenerValorDecimal(String num){
-        int valor = 0; 
-        if (num.charAt(0) == '0' && num.charAt(1) == 'x'){
-            for (int i = 2; i < num.length(); i++){
-                if(((int)num.charAt(i)-48)<= 9){
-                    valor = (int) (valor + ((int)num.charAt(i)-48)*Math.pow(16, i-2));  
+    public int obtenerValorDecimal(String num) {
+        int valor = 0;
+        if (num.charAt(0) == '0' && num.charAt(1) == 'x') {
+            for (int i = 2; i < num.length(); i++) {
+                if (((int) num.charAt(i) - 48) <= 9) {
+                    valor = (int) (valor + ((int) num.charAt(i) - 48) * Math.pow(16, i - 2));
                 } else {
-                    valor = (int) (valor + ((int)num.charAt(i)-55)*Math.pow(16, i-2));
+                    valor = (int) (valor + ((int) num.charAt(i) - 55) * Math.pow(16, i - 2));
                 }
             }
-        }else {
-            valor = Integer.parseInt(num); 
+        } else {
+            valor = Integer.parseInt(num);
         }
 
-        return valor; 
+        return valor;
     }
 
-
-
-    public static int aux(int i, String cadena) {
+    public int aux(int i, String cadena) {
         boolean existe = false;
         int j = 0;
         while (i < cadena.length() && existe == false) {
-            
+
             if (cadena.charAt(i) == '\"') {
                 existe = true;
-                j = i;  
+                j = i;
             }
-            i++; 
+            i++;
         }
 
-        return j; 
+        return j;
     }
 
-    public static boolean isIdentificador(String cadena) {
+    public boolean isIdentificador(String cadena) {
         boolean bandera = false;
         Pattern pat = Pattern.compile("[a-zA-Z]+[0-9]*");
         if (isMatch(cadena, pat) && cadena.length() <= 16) {
@@ -186,25 +201,25 @@ public class lexer {
         return bandera;
     }
 
-    public static boolean isPalabraReservada(String cadena) {
+    public boolean isPalabraReservada(String cadena) {
         Pattern pat = Pattern.compile("PROGRAMA|IMPRIME|LEE|FINPROG");
 
         return isMatch(cadena, pat);
     }
 
-    public static boolean isLiteralNumerica(String cadena) {
+    public boolean isLiteralNumerica(String cadena) {
         Pattern pat = Pattern.compile("[0-9]+|0x([0-9]|[A-F])+");
         return isMatch(cadena, pat);
     }
 
-    public static boolean isLiteralTexto(String cadena) {
+    public boolean isLiteralTexto(String cadena) {
         Pattern pat = Pattern.compile("\"[a-zA-Z0-9 ]+\"");
 
         return isMatch(cadena, pat);
     }
 
     // Devuelve true si la cadena pertence al LR
-    public static boolean isMatch(String cadena, Pattern pat) {
+    public boolean isMatch(String cadena, Pattern pat) {
         boolean bandera = false;
         Matcher mat = pat.matcher(cadena);
         if (mat.matches()) {
@@ -215,12 +230,21 @@ public class lexer {
 
     }
 
-    public static boolean isOperador(char c) {
+    public boolean isOperador(char c) {
         boolean bandera = false;
         if (c == '+' || c == '-' || c == '*' || c == '/' || c == '=') {
             bandera = true;
         }
 
         return bandera;
+    }
+
+    public String obtenerRuta(String ruta) {
+        int i = ruta.length();
+        while (ruta.charAt(i - 1) != '\\') {
+            i--;
+        }
+
+        return ruta.substring(0, i);
     }
 }
