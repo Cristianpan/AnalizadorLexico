@@ -1,11 +1,11 @@
 package Controlador;
 
 import Modelo.Lexer;
+import Modelo.Sintactico;
 import Vista.Ventana;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.Scanner;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -47,9 +47,17 @@ public class CtrlVista implements ActionListener {
                 this.frm.getBtnAnalizar().setEnabled(true);
             }
         } else if (event.getSource() == this.frm.getBtnAnalizar()) {
+            this.frm.getTxtTerminal().setText(null);
            if (nombreArchivo.substring(nombreArchivo.length() - 4).equals(".mio")){
                 try {
-                    this.lexer.Lexer(rutaArchivo);
+                    this.rutaArchivo = obtenerRuta(rutaArchivo);
+                    if(this.lexer.Lexer(rutaArchivo + nombreArchivo, rutaArchivo)){
+                        Sintactico sintactico = new Sintactico(rutaArchivo, this.frm.getTxtTerminal()); 
+
+                        if (sintactico.analizarGramática()){
+                            this.frm.getTxtTerminal().append("It's okay");
+                        }
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -64,5 +72,15 @@ public class CtrlVista implements ActionListener {
     public void limpiarCampos(){
         this.frm.getTxtDireccion().setText(null);
         this.frm.getTxtTerminal().setText(null);
+    }
+
+
+    public String obtenerRuta(String ruta) {
+        int i = ruta.length();
+        while (ruta.charAt(i - 1) != '\\') {
+            i--;
+        }
+
+        return ruta.substring(0, i);
     }
 }

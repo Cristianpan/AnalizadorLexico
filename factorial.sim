@@ -1,16 +1,16 @@
 IDS
 Num id1
-VarX id2
-Varx id3
+x id2
+VarX id3
 prueba id4
 VarY id5
 VarZ id6
 
 TXTS
-"Variable Z es"  txt1
-"Variable X es"  txt2
 
 NUM
 100  100
-0x1D  209
+5  5
+6  6
+7  7
 0xA1  26

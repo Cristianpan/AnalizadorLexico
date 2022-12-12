@@ -4,8 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.ObjectInputFilter.Status;
-import java.sql.SQLInvalidAuthorizationSpecException;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Scanner;
@@ -17,6 +16,7 @@ import javax.swing.JTextArea;
 
 public class Lexer {
     private ArrayList<String> tokens = new ArrayList<>();
+    private String lineasCodigo = ""; 
     private Set<String> ids = new HashSet<>();
     private Set<String> txt = new HashSet<>();
     private Set<String> vls = new HashSet<>();
@@ -26,9 +26,10 @@ public class Lexer {
         this.terminal = terminal;
     }
 
-    public boolean Lexer(String ruta) throws Exception {
-        File fichero = new File(ruta);
-        borrarFicheros(obtenerRuta(ruta)); 
+    public boolean Lexer(String rutaArchivo, String ruta) throws Exception {
+        File fichero = new File(rutaArchivo);
+        borrarFicheros(ruta); 
+        tokens.clear();
         Scanner s = null;
         int linea = 0;
 
@@ -36,22 +37,26 @@ public class Lexer {
             s = new Scanner(fichero);
             while (s.hasNextLine()) {
                 linea++;
-                if(obtenerDatos(s.nextLine(), linea) == false){
+                if(obtenerDatos(s.nextLine(), linea) == false){ 
+                    s.close();
                     return false; 
+                } else {
+                    if (!this.lineasCodigo.equals("")){
+                        tokens.add(String.valueOf(linea)); 
+                        tokens.add(this.lineasCodigo); 
+                    }
                 }
             }
-            s.close();
         } catch (Exception ex) {
             ex.printStackTrace();
+        } finally{
+            s.close();
         }
         
-        this.terminal.append("It's okay");
-        generarArchivoLex(obtenerRuta(ruta));
-        generarArchivoSim(obtenerRuta(ruta));
+        generarArchivoLex(ruta);
+        generarArchivoSim(ruta);
 
         return true; 
-
-
     }
 
     public boolean obtenerDatos(String cadena, int linea) {
@@ -59,12 +64,12 @@ public class Lexer {
         String auxCadena = "";
         cadena = cadena.trim();
         length = cadena.length();
+        this.lineasCodigo = ""; 
 
         endIndex = 0;
         beginIndex = 0;
 
         while (endIndex < length && cadena.charAt(0) != '#') {
-
             // Intenta encontrar el par de " " para ignorar los separadores
             if (cadena.charAt(endIndex) == '\"') {
                 aux = aux(endIndex + 1, cadena);
@@ -101,20 +106,20 @@ public class Lexer {
     public boolean analizarCadena(String cadena, int linea) {
 
         if (isPalabraReservada(cadena)) {
-            tokens.add(cadena);
+            this.lineasCodigo += cadena; 
         } else if (isIdentificador(cadena)) {
-            tokens.add("[id]");
+            this.lineasCodigo += "[id]"; 
             ids.add(cadena);
         } else if (isLiteralTexto(cadena)) {
-            tokens.add("[litalfnum]");
+            this.lineasCodigo += "[litalfnum]"; 
             txt.add(cadena);
         } else if (isLiteralNumerica(cadena)) {
-            tokens.add("[valorn]");
+            this.lineasCodigo += "[valorn]"; 
             vls.add(cadena);
         } else {
             if (cadena.length() != 0) {
                 if (isOperador(cadena.charAt(0)))
-                    tokens.add(cadena);
+                    this.lineasCodigo += cadena; 
                 else {
                     this.terminal.append("Error en la linea " + linea + ", simbolo invalido: " + cadena + "\n\n"); 
                     return false; 
@@ -138,6 +143,7 @@ public class Lexer {
         }
 
         archivo.close();
+        out.close();
 
     }
 
@@ -169,6 +175,7 @@ public class Lexer {
         }
 
         archivo.close();
+        out.close();
 
     }
 
@@ -249,15 +256,6 @@ public class Lexer {
         }
 
         return bandera;
-    }
-
-    public String obtenerRuta(String ruta) {
-        int i = ruta.length();
-        while (ruta.charAt(i - 1) != '\\') {
-            i--;
-        }
-
-        return ruta.substring(0, i);
     }
 
     public void borrarFicheros(String ruta) throws IOException{
